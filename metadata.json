@@ -1,0 +1,6 @@
+{
+  "name": "Alpine Thermal Solutions",
+  "description": "Premium High-Performance Industrial Thermal Packaging and Cold Chain Solutions for pharmaceutical, clinical trials, and frozen food logistics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

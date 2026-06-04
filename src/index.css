@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", "Poppins", system-ui, -apple-system, sans-serif;
+  --font-serif: "Poppins", "Inter", system-ui, serif;
+}
+
+/* Ensure smooth scrolling across page shifts */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
+}
+
+/* High contrast premium B2B scrollbar styling */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0D1B2A;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #0055CC;
+  border-radius: 5px;
+  border: 2px solid #0D1B2A;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #FF6B35;
+}
+
+/* Base resets & typography optimization */
+body {
+  font-family: var(--font-sans);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, .font-serif-header {
+  font-family: var(--font-serif);
+}
