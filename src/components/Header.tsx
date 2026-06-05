@@ -5,7 +5,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Menu, X, ArrowUpRight, ShieldCheck } from 'lucide-react';
+import { Menu, X, ArrowUpRight, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import { PageId } from '../types';
 import Logo from './Logo';
 
@@ -33,7 +33,7 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
   return (
     <header
       id="alpine-global-header"
-      className="fixed top-0 left-0 right-0 h-16 md:h-20 bg-[#0D1B2A]/95 backdrop-blur-md border-b border-white/5 z-50 flex items-center justify-between px-4 sm:px-6 lg:px-8 transition-colors duration-200"
+      className="fixed top-0 left-0 right-0 h-16 md:h-20 bg-[#082b3f]/75 backdrop-blur-md border-white/5 z-50 flex items-center justify-between px-4 sm:px-6 lg:px-8 transition-colors duration-200"
     >
       {/* Brand Logo Container */}
       <div 
@@ -72,16 +72,16 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
       {/* Desktop CTA Action Button */}
       <div className="hidden md:flex items-center gap-4">
         {/* Certification badge */}
-        <div className="flex items-center gap-1 bg-[#102A43] border border-blue-900/40 rounded-full px-3 py-1 text-[11px] font-mono font-medium text-blue-300">
-          <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
-          <span>CE COMPLIANT</span>
+        <div className="flex items-center gap-1 px-3 py-1 text-[11px] font-mono font-medium text-blue-300">
+          <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" />
+          <span>CE CERTIFIED</span>
         </div>
         <motion.button
           id="header-cta-desktop"
           whileHover={{ y: -2, scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={() => handleNavClick('contact')}
-          className="bg-[#FF6B35] text-white hover:bg-[#ff5514] px-5 py-2.5 rounded text-xs font-bold tracking-wider uppercase flex items-center gap-1.5 shadow-md shadow-[#FF6B35]/25 hover:shadow-[#FF6B35]/40 transition-shadow duration-200"
+          className="bg-[#00C6D4]/27 text-white hover:bg-[#00A8B5] px-5 py-2.5 rounded text-xs font-bold tracking-wider uppercase flex items-center gap-1.5 shadow-md shadow-[#00C6D4]/25 hover:shadow-[#00C6D4]/40 transition-shadow duration-200"
         >
           <span>Get In Touch</span>
           <ArrowUpRight className="w-4 h-4" />
@@ -94,7 +94,7 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={() => handleNavClick('contact')}
-            className="bg-[#FF6B35] text-white px-3 py-1.5 rounded text-[11px] font-bold tracking-wider uppercase shadow-md shadow-[#FF6B35]/10"
+            className="bg-[#00C6D4]/27 text-white px-3 py-1.5 rounded text-[11px] font-bold tracking-wider uppercase shadow-md shadow-[#FF6B35]/10"
           >
             Contact
           </motion.button>
@@ -131,7 +131,7 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
               className="fixed top-16 bottom-0 left-0 w-3/4 max-w-xs bg-[#0D1B2A] border-r border-white/5 z-45 p-6 flex flex-col justify-between"
             >
               <div className="flex flex-col gap-5 mt-4">
-                <span className="font-mono text-[10px] text-slate-500 uppercase tracking-widest border-b border-white/5 pb-2">
+                <span className="font-mono text-[10px] text-slate-500 uppercase tracking-widest border-white/5 pb-2">
                   Navigation
                 </span>
                 <div className="flex flex-col gap-3">
@@ -139,7 +139,7 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
                     <button
                       key={item.id}
                       onClick={() => handleNavClick(item.id)}
-                      className={`text-left text-lg font-medium py-2.5 transition-colors duration-200 border-b border-white/5 ${
+                      className={`text-left text-lg font-medium py-2.5 transition-colors duration-200 border-white/5 ${
                         currentPage === item.id ? 'text-[#0055CC] font-bold' : 'text-slate-300 hover:text-white'
                       }`}
                     >
@@ -157,7 +157,9 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
                   <span className="text-slate-500 text-[10px] mt-1">sales@alpinethermal.in</span>
                 </div>
                 <div className="flex items-center gap-1.5 bg-[#102A43] self-start rounded-full px-2.5 py-1 text-[10px] font-mono text-cyan-300">
-                  <ShieldCheck className="w-3 h-3 text-cyan-400" />
+                  <svg className="w-3 h-3 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
                   <span>CE CERTIFIED</span>
                 </div>
               </div>

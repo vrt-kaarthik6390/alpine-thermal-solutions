@@ -41,3 +41,23 @@ body {
 h1, h2, h3, h4, .font-serif-header {
   font-family: var(--font-serif);
 }
+
+/* Scroll reveal/fade-in animations */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(25px);
+  transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.scroll-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Parallax/Anti-gravity floating styling */
+.parallax-element {
+  will-change: transform;
+  transition: transform 0.1s ease-out;
+}
+

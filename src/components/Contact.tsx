@@ -30,6 +30,8 @@ export default function Contact() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [honeypot, setHoneypot] = useState('');
 
   // Inline focus validators
   const validateField = (name: string, value: string) => {
@@ -53,8 +55,10 @@ export default function Contact() {
     validateField(name, value);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitError(null);
+    setSubmitSuccess(false);
 
     // Final checks
     const finalErrors: Record<string, string> = {};
@@ -65,35 +69,86 @@ export default function Contact() {
 
     if (Object.keys(finalErrors).length > 0) {
       setErrors(finalErrors);
-      // Trigger subtle haptic rumble shake conceptually on error bounds
       return;
     }
 
     setIsSubmitting(true);
 
-    // Simulated B2B lead dispatching delay
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setSubmitSuccess(true);
-      // Dissolve after 5 seconds as specified
+    // Honeypot spam prevention: If honeypot is filled, silent exit (simulate success to deceive bots)
+    if (honeypot.trim() !== '') {
       setTimeout(() => {
-        setSubmitSuccess(false);
-      }, 5000);
-      
-      // Clear
-      setFormData({
-        name: '',
-        company: '',
-        email: '',
-        phone: '',
-        industry: 'Pharma & Biologics',
-        message: ''
+        setIsSubmitting(false);
+        setSubmitSuccess(true);
+        setFormData({
+          name: '',
+          company: '',
+          email: '',
+          phone: '',
+          industry: 'Pharma & Biologics',
+          message: ''
+        });
+        setHoneypot('');
+      }, 1000);
+      return;
+    }
+
+    try {
+      const payload = {
+        name: formData.name,
+        email: formData.email,
+        company: formData.company || 'Not Provided',
+        phone: formData.phone || 'Not Provided',
+        industry: formData.industry,
+        message: formData.message,
+        submitted_at: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) + ' (IST)',
+        _subject: `New Alpine Lead: ${formData.name} (${formData.company || 'No Company'})`,
+        _honey: honeypot,
+        _template: 'table'
+      };
+
+      const response = await fetch('https://formsubmit.co/ajax/sales@alpinethermal.in', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(payload)
       });
-    }, 1500);
+
+      const data = await response.json();
+
+      if (response.ok && data.success === 'true') {
+        setIsSubmitting(false);
+        setSubmitSuccess(true);
+        // Dissolve after 5 seconds
+        setTimeout(() => {
+          setSubmitSuccess(false);
+        }, 5000);
+
+        // Clear Form
+        setFormData({
+          name: '',
+          company: '',
+          email: '',
+          phone: '',
+          industry: 'Pharma & Biologics',
+          message: ''
+        });
+      } else {
+        throw new Error(data.message || 'Transmission failed.');
+      }
+    } catch (error: any) {
+      setIsSubmitting(false);
+      setSubmitError(error.message || 'An unexpected transmission error occurred. Please try again or call the hotline.');
+      // Auto-hide error after 7 seconds
+      setTimeout(() => {
+        setSubmitError(null);
+      }, 7000);
+    }
   };
 
   return (
-    <div id="contact-us-view" className="font-sans text-slate-800 bg-[#F0F4F8] pt-16">
+    <div id="contact-us-view" className="font-sans text-slate-800 bg-[#F0F4F8]">
       
       {/* 11.1 CONTACT US HERO */}
       <section
@@ -101,8 +156,8 @@ export default function Contact() {
         className="relative bg-[#0D1B2A] text-white py-20 px-4 sm:px-6 lg:px-8 text-center min-h-[35vh] flex flex-col justify-center"
       >
         <div className="absolute inset-0 bg-radial-gradient(at left index, rgba(0, 85, 204, 0.1) 0%, transparent 60%) pointer-events-none" />
-        <div className="max-w-4xl mx-auto relative z-10">
-          <span className="text-xs font-mono font-bold text-[#FF6B35] tracking-[0.3em] uppercase">
+        <div className="max-w-4xl mx-auto relative z-10 pt-16">
+          <span className="text-xs font-sans font-bold text-[#00C6D4] tracking-[0.3em] uppercase">
             Alpine Lead Integration
           </span>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-sans font-black tracking-tight leading-tight uppercase mt-4">
@@ -146,11 +201,44 @@ export default function Contact() {
               )}
             </AnimatePresence>
 
+            {/* Error flash screen */}
+            <AnimatePresence>
+              {submitError && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="w-full bg-red-50 border-2 border-red-500 rounded-lg p-5 flex items-start gap-3 mb-6 relative overflow-hidden"
+                >
+                  <AlertTriangle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+                  <div className="flex flex-col">
+                    <h3 className="text-sm font-bold text-red-800 uppercase tracking-wide">
+                      Transmission Failed
+                    </h3>
+                    <p className="text-xs text-red-700 mt-1 leading-relaxed">
+                      {submitError}
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             <form onSubmit={handleSubmit} className="w-full flex flex-col gap-5">
+              
+              {/* Honeypot field for spam prevention */}
+              <input
+                type="text"
+                name="_honey"
+                value={honeypot}
+                onChange={(e) => setHoneypot(e.target.value)}
+                style={{ display: 'none' }}
+                tabIndex={-1}
+                autoComplete="off"
+              />
               
               {/* Name Block */}
               <div className="flex flex-col w-full text-left">
-                <label htmlFor="contact-name" className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#0D1B2A] mb-1.5 flex justify-between">
+                <label htmlFor="contact-name" className="text-[11px] font-sans font-bold uppercase tracking-wider text-[#0D1B2A] mb-1.5 flex justify-between">
                   <span>Full Name: *</span>
                   {errors.name && <span className="text-red-500 font-sans font-normal normal-case">{errors.name}</span>}
                 </label>
@@ -170,7 +258,7 @@ export default function Contact() {
 
               {/* Company Block */}
               <div className="flex flex-col w-full text-left">
-                <label htmlFor="contact-company" className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#0D1B2A] mb-1.5">
+                <label htmlFor="contact-company" className="text-[11px] font-sans font-bold uppercase tracking-wider text-[#0D1B2A] mb-1.5">
                   Company Name:
                 </label>
                 <input
@@ -187,7 +275,7 @@ export default function Contact() {
               {/* Grid block email phone */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 w-full">
                 <div className="flex flex-col text-left">
-                  <label htmlFor="contact-email" className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#0D1B2A] mb-1.5 flex justify-between">
+                  <label htmlFor="contact-email" className="text-[11px] font-sans font-bold uppercase tracking-wider text-[#0D1B2A] mb-1.5 flex justify-between">
                     <span>Business Email: *</span>
                     {errors.email && <span className="text-red-500 font-sans font-normal normal-case">{errors.email}</span>}
                   </label>
@@ -205,7 +293,7 @@ export default function Contact() {
                   />
                 </div>
                 <div className="flex flex-col text-left">
-                  <label htmlFor="contact-phone" className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#0D1B2A] mb-1.5">
+                  <label htmlFor="contact-phone" className="text-[11px] font-sans font-bold uppercase tracking-wider text-[#0D1B2A] mb-1.5">
                     Phone Number:
                   </label>
                   <input
@@ -222,7 +310,7 @@ export default function Contact() {
 
               {/* Industry Dropdown */}
               <div className="flex flex-col w-full text-left">
-                <label htmlFor="contact-industry" className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#0D1B2A] mb-1.5">
+                <label htmlFor="contact-industry" className="text-[11px] font-sans font-bold uppercase tracking-wider text-[#0D1B2A] mb-1.5">
                   Target B2B Industry Corridor: *
                 </label>
                 <select
@@ -242,7 +330,7 @@ export default function Contact() {
 
               {/* Message Block */}
               <div className="flex flex-col w-full text-left">
-                <label htmlFor="contact-message" className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#0D1B2A] mb-1.5 flex justify-between">
+                <label htmlFor="contact-message" className="text-[11px] font-sans font-bold uppercase tracking-wider text-[#0D1B2A] mb-1.5 flex justify-between">
                   <span>Thermodynamic Criteria Message: *</span>
                   {errors.message && <span className="text-red-500 font-sans font-normal normal-case">{errors.message}</span>}
                 </label>
@@ -266,7 +354,7 @@ export default function Contact() {
                 disabled={isSubmitting}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="bg-[#FF6B35] text-white hover:bg-[#ff5514] font-extrabold uppercase text-xs tracking-widest py-4 px-6 rounded flex items-center justify-center gap-2 transition-colors cursor-pointer w-full mt-2 shadow-md shadow-[#FF6B35]/25"
+                className="bg-[#005F5F] text-white hover:bg-[#00a8b8] font-extrabold uppercase text-xs tracking-widest py-4 px-6 rounded flex items-center justify-center gap-2 transition-colors cursor-pointer w-full mt-2 shadow-md shadow-[#00C6D4]/25"
               >
                 {isSubmitting ? (
                   <>
@@ -299,7 +387,7 @@ export default function Contact() {
                   <Mail className="w-5 h-5" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[10px] uppercase font-mono tracking-wider font-extrabold text-slate-400">
+                  <span className="text-[10px] uppercase font-sans tracking-wider font-extrabold text-slate-400">
                     Lead Corruptions & Inquiries:
                   </span>
                   <a
@@ -317,7 +405,7 @@ export default function Contact() {
                   <Phone className="w-5 h-5" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[10px] uppercase font-mono tracking-wider font-extrabold text-slate-400">
+                  <span className="text-[10px] uppercase font-sans tracking-wider font-extrabold text-slate-400">
                     Works Technical Hotline:
                   </span>
                   <a
@@ -331,11 +419,11 @@ export default function Contact() {
 
               {/* Box 3 URL address */}
               <div className="flex gap-4">
-                <div className="w-10 h-10 bg-[#0055CC]/10 text-[#FF6B35] rounded flex items-center justify-center shrink-0 border border-orange-100">
+                <div className="w-10 h-10 bg-[#0055CC]/10 text-[#00C6D4] rounded flex items-center justify-center shrink-0 border border-orange-100">
                   <Globe className="w-5 h-5" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[10px] uppercase font-mono tracking-wider font-extrabold text-slate-400">
+                  <span className="text-[10px] uppercase font-sans tracking-wider font-extrabold text-slate-400">
                     Online Resource Nodes:
                   </span>
                   <a
@@ -355,7 +443,7 @@ export default function Contact() {
                   <MapPin className="w-5 h-5 text-slate-900" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[10px] uppercase font-mono tracking-wider font-extrabold text-slate-400">
+                  <span className="text-[10px] uppercase font-sans tracking-wider font-extrabold text-slate-400">
                     Commercial Manufacturing Plant:
                   </span>
                   <p className="text-xs text-slate-500 mt-1 leading-relaxed">
@@ -388,13 +476,13 @@ export default function Contact() {
       <section className="bg-[#0D1B2A] pt-16 pb-20 px-4 sm:px-6 lg:px-8 border-t border-white/5">
         <div className="max-w-6xl mx-auto">
           <div className="text-center max-w-2xl mx-auto mb-10 text-white">
-            <span className="text-xs font-mono font-bold text-[#FF6B35] tracking-[0.25em] uppercase">
+            <span className="text-xs font-sans font-bold text-[#00C6D4] tracking-[0.25em] uppercase">
               Works Coordinates Visual
             </span>
             <h2 className="text-2xl sm:text-3xl font-sans font-black uppercase tracking-tight mt-2">
               Find Us On The Grid
             </h2>
-            <p className="text-xs font-mono text-slate-400 mt-2">
+            <p className="text-xs font-sans text-slate-400 mt-2">
               Survey No 29/9, Anumepalli, Hosur, Krishnagiri District - 635126
             </p>
             <div className="w-12 h-1 bg-[#0055CC] mx-auto mt-4" />
