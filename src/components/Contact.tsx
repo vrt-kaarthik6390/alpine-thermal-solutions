@@ -93,31 +93,30 @@ export default function Contact() {
     }
 
     try {
+      const encode = (data: Record<string, string>) => {
+        return Object.keys(data)
+          .map(key => encodeURIComponent(key) + "=" + encodeURIComponent(data[key]))
+          .join("&");
+      };
+
       const payload = {
+        "form-name": "contact",
+        "bot-field": honeypot,
         name: formData.name,
         email: formData.email,
         company: formData.company || 'Not Provided',
         phone: formData.phone || 'Not Provided',
         industry: formData.industry,
-        message: formData.message,
-        submitted_at: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) + ' (IST)',
-        _subject: `New Alpine Lead: ${formData.name} (${formData.company || 'No Company'})`,
-        _honey: honeypot,
-        _template: 'table'
+        message: formData.message
       };
 
-      const response = await fetch('https://formsubmit.co/ajax/sales@alpinethermal.in', {
+      const response = await fetch('/', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify(payload)
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: encode(payload)
       });
 
-      const data = await response.json();
-
-      if (response.ok && data.success === 'true') {
+      if (response.ok) {
         setIsSubmitting(false);
         setSubmitSuccess(true);
         // Dissolve after 5 seconds
@@ -135,7 +134,7 @@ export default function Contact() {
           message: ''
         });
       } else {
-        throw new Error(data.message || 'Transmission failed.');
+        throw new Error('Transmission failed. Please try again.');
       }
     } catch (error: any) {
       setIsSubmitting(false);
@@ -228,7 +227,7 @@ export default function Contact() {
               {/* Honeypot field for spam prevention */}
               <input
                 type="text"
-                name="_honey"
+                name="bot-field"
                 value={honeypot}
                 onChange={(e) => setHoneypot(e.target.value)}
                 style={{ display: 'none' }}
