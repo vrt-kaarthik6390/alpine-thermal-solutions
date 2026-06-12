@@ -109,7 +109,7 @@ function BentoGrid() {
   return (
     <div className="grid grid-cols-3 grid-rows-3 gap-2 w-full h-[420px]">
       {bentoCards.map((card, i) => (
-        <BentoCard key={i} {...card} />
+        <BentoCard key={i} img={card.img} tag={card.tag} title={card.title} span={card.span} />
       ))}
     </div>
   );
